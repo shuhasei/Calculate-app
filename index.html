@@ -13,7 +13,7 @@
       <div>
         <p class="eyebrow">MENTAL MATH TRAINING</p>
         <h1>暗算スピードチャレンジ</h1>
-        <p class="subtitle">制限時間の中で、できるだけ速く・正確に答えよう！</p>
+        <p class="subtitle">毎回ランダム出題。制限時間の中で、速く・正確に答えよう！</p>
       </div>
       <div class="best-card" aria-label="自己ベスト">
         <span>BEST</span>
@@ -26,8 +26,23 @@
         <span class="step-badge">1</span>
         <div>
           <h2>ゲーム設定</h2>
-          <p>自分に合った難しさと時間を選んでください。</p>
+          <p>コース・難易度・時間を選んでください。</p>
         </div>
+      </div>
+
+      <div class="course-grid">
+        <label class="course-card">
+          <input type="radio" name="course" value="elementary" checked />
+          <span class="course-icon">🧮</span>
+          <strong>小学生コース</strong>
+          <small>正の整数だけの ＋ − × ÷</small>
+        </label>
+        <label class="course-card">
+          <input type="radio" name="course" value="junior" />
+          <span class="course-icon">📐</span>
+          <strong>中学生コース</strong>
+          <small>正負の数・分数・指数・文字式</small>
+        </label>
       </div>
 
       <div class="setting-grid">
@@ -52,18 +67,15 @@
           <label class="choice-pill"><input type="radio" name="question-limit" value="10" /> 10秒</label>
         </fieldset>
 
-        <fieldset class="setting-card operations-card">
-          <legend>出題する計算</legend>
-          <label class="operation-toggle"><input type="checkbox" name="operation" value="add" checked /><span>＋</span>たし算</label>
-          <label class="operation-toggle"><input type="checkbox" name="operation" value="sub" checked /><span>−</span>ひき算</label>
-          <label class="operation-toggle"><input type="checkbox" name="operation" value="mul" checked /><span>×</span>かけ算</label>
-          <label class="operation-toggle"><input type="checkbox" name="operation" value="div" /><span>÷</span>わり算</label>
-        </fieldset>
+        <div class="setting-card random-card">
+          <strong>🎲 毎問ランダム出題</strong>
+          <p id="course-description">たし算・ひき算・かけ算・わり算をランダムに出題します。答えも正の整数になる問題だけです。</p>
+        </div>
       </div>
 
       <p id="setup-error" class="setup-error" role="alert" aria-live="polite"></p>
       <button id="start-button" class="primary-button" type="button">スタート</button>
-      <p class="keyboard-hint">キーボードでも操作できます：数字 / − / Enter / Backspace</p>
+      <p class="keyboard-hint">数字 / − / / / Enter / Backspace でも操作できます。</p>
     </section>
 
     <section id="game-screen" class="panel game-panel hidden" aria-live="polite">
@@ -78,10 +90,12 @@
       <div class="question-area">
         <div class="question-meta">
           <span id="question-number">第1問</span>
+          <span id="question-type">四則演算</span>
           <span>1問 <strong id="question-time">5.0</strong> 秒</span>
         </div>
         <div class="question-timer-track" aria-hidden="true"><div id="question-progress" class="question-timer-fill"></div></div>
         <p id="problem" class="problem">12 ＋ 8</p>
+        <p id="answer-hint" class="answer-hint">答えを入力</p>
         <div id="answer-display" class="answer-display" aria-label="入力中の答え">?</div>
         <p id="feedback" class="feedback">答えを入力して Enter</p>
       </div>
@@ -98,7 +112,8 @@
         <button type="button" data-key="3">3</button>
         <button type="button" data-key="minus">−</button>
         <button type="button" data-key="0">0</button>
-        <button type="button" data-key="backspace">⌫</button>
+        <button type="button" data-key="slash">/</button>
+        <button type="button" class="backspace-key" data-key="backspace">⌫ 1文字消す</button>
         <button type="button" class="submit-key" data-key="enter">答える</button>
       </div>
     </section>
@@ -106,6 +121,7 @@
     <section id="result-screen" class="panel result-panel hidden">
       <p class="eyebrow">RESULT</p>
       <h2>チャレンジ終了！</h2>
+      <p id="result-course" class="result-course"></p>
       <div class="result-score"><span>スコア</span><strong id="result-score">0</strong></div>
 
       <div class="result-grid">
