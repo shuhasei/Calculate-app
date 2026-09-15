@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111827" />
+  <title>暗算スピードチャレンジ</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">MENTAL MATH TRAINING</p>
+        <h1>暗算スピードチャレンジ</h1>
+        <p class="subtitle">制限時間の中で、できるだけ速く・正確に答えよう！</p>
+      </div>
+      <div class="best-card" aria-label="自己ベスト">
+        <span>BEST</span>
+        <strong id="header-best">0</strong>
+      </div>
+    </header>
+
+    <section id="setup-screen" class="panel setup-panel">
+      <div class="section-title">
+        <span class="step-badge">1</span>
+        <div>
+          <h2>ゲーム設定</h2>
+          <p>自分に合った難しさと時間を選んでください。</p>
+        </div>
+      </div>
+
+      <div class="setting-grid">
+        <fieldset class="setting-card">
+          <legend>難易度</legend>
+          <label class="choice-pill"><input type="radio" name="difficulty" value="easy" checked /> やさしい</label>
+          <label class="choice-pill"><input type="radio" name="difficulty" value="normal" /> ふつう</label>
+          <label class="choice-pill"><input type="radio" name="difficulty" value="hard" /> むずかしい</label>
+        </fieldset>
+
+        <fieldset class="setting-card">
+          <legend>ゲーム時間</legend>
+          <label class="choice-pill"><input type="radio" name="duration" value="30" /> 30秒</label>
+          <label class="choice-pill"><input type="radio" name="duration" value="60" checked /> 60秒</label>
+          <label class="choice-pill"><input type="radio" name="duration" value="90" /> 90秒</label>
+        </fieldset>
+
+        <fieldset class="setting-card">
+          <legend>1問の制限時間</legend>
+          <label class="choice-pill"><input type="radio" name="question-limit" value="3" /> 3秒</label>
+          <label class="choice-pill"><input type="radio" name="question-limit" value="5" checked /> 5秒</label>
+          <label class="choice-pill"><input type="radio" name="question-limit" value="10" /> 10秒</label>
+        </fieldset>
+
+        <fieldset class="setting-card operations-card">
+          <legend>出題する計算</legend>
+          <label class="operation-toggle"><input type="checkbox" name="operation" value="add" checked /><span>＋</span>たし算</label>
+          <label class="operation-toggle"><input type="checkbox" name="operation" value="sub" checked /><span>−</span>ひき算</label>
+          <label class="operation-toggle"><input type="checkbox" name="operation" value="mul" checked /><span>×</span>かけ算</label>
+          <label class="operation-toggle"><input type="checkbox" name="operation" value="div" /><span>÷</span>わり算</label>
+        </fieldset>
+      </div>
+
+      <p id="setup-error" class="setup-error" role="alert" aria-live="polite"></p>
+      <button id="start-button" class="primary-button" type="button">スタート</button>
+      <p class="keyboard-hint">キーボードでも操作できます：数字 / − / Enter / Backspace</p>
+    </section>
+
+    <section id="game-screen" class="panel game-panel hidden" aria-live="polite">
+      <div class="game-topbar">
+        <div class="stat-box"><span>のこり</span><strong id="game-time">60.0</strong><small>秒</small></div>
+        <div class="stat-box"><span>スコア</span><strong id="score">0</strong></div>
+        <div class="stat-box"><span>連続正解</span><strong id="streak">0</strong></div>
+      </div>
+
+      <div class="progress-track" aria-hidden="true"><div id="game-progress" class="progress-fill"></div></div>
+
+      <div class="question-area">
+        <div class="question-meta">
+          <span id="question-number">第1問</span>
+          <span>1問 <strong id="question-time">5.0</strong> 秒</span>
+        </div>
+        <div class="question-timer-track" aria-hidden="true"><div id="question-progress" class="question-timer-fill"></div></div>
+        <p id="problem" class="problem">12 ＋ 8</p>
+        <div id="answer-display" class="answer-display" aria-label="入力中の答え">?</div>
+        <p id="feedback" class="feedback">答えを入力して Enter</p>
+      </div>
+
+      <div class="keypad" aria-label="数字キーパッド">
+        <button type="button" data-key="7">7</button>
+        <button type="button" data-key="8">8</button>
+        <button type="button" data-key="9">9</button>
+        <button type="button" data-key="4">4</button>
+        <button type="button" data-key="5">5</button>
+        <button type="button" data-key="6">6</button>
+        <button type="button" data-key="1">1</button>
+        <button type="button" data-key="2">2</button>
+        <button type="button" data-key="3">3</button>
+        <button type="button" data-key="minus">−</button>
+        <button type="button" data-key="0">0</button>
+        <button type="button" data-key="backspace">⌫</button>
+        <button type="button" class="submit-key" data-key="enter">答える</button>
+      </div>
+    </section>
+
+    <section id="result-screen" class="panel result-panel hidden">
+      <p class="eyebrow">RESULT</p>
+      <h2>チャレンジ終了！</h2>
+      <div class="result-score"><span>スコア</span><strong id="result-score">0</strong></div>
+
+      <div class="result-grid">
+        <div><span>正解</span><strong id="result-correct">0</strong></div>
+        <div><span>回答数</span><strong id="result-total">0</strong></div>
+        <div><span>正答率</span><strong id="result-accuracy">0%</strong></div>
+        <div><span>平均回答</span><strong id="result-average">0.0秒</strong></div>
+        <div><span>最高連続</span><strong id="result-streak">0</strong></div>
+        <div><span>自己ベスト</span><strong id="result-best">0</strong></div>
+      </div>
+
+      <div id="review-wrap" class="review-wrap hidden">
+        <h3>まちがえた問題を復習</h3>
+        <div id="review-list" class="review-list"></div>
+      </div>
+
+      <div class="result-actions">
+        <button id="retry-button" class="primary-button" type="button">同じ設定でもう一度</button>
+        <button id="settings-button" class="secondary-button" type="button">設定を変える</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
