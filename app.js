@@ -72,6 +72,15 @@ function choose(items) {
   return items[rand(0, items.length - 1)];
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 function gcd(a, b) {
   a = Math.abs(a);
   b = Math.abs(b);
@@ -92,6 +101,16 @@ function fractionText(n, d) {
   const f = normalizeFraction(n, d);
   if (f.d === 1) return String(f.n);
   return `${f.n}/${f.d}`;
+}
+
+function fractionHtml(numerator, denominator) {
+  const f = normalizeFraction(numerator, denominator);
+  if (f.d === 1) return `<span class="math-number">${f.n}</span>`;
+  return `<span class="fraction" aria-label="${f.n}分の${f.d}"><span class="fraction-top">${f.n}</span><span class="fraction-bar" aria-hidden="true"></span><span class="fraction-bottom">${f.d}</span></span>`;
+}
+
+function fractionExpressionHtml(n1, d1, operator, n2, d2) {
+  return `<span class="math-expression">${fractionHtml(n1, d1)}<span class="math-operator">${operator}</span>${fractionHtml(n2, d2)}</span>`;
 }
 
 function parseAnswer(input) {
@@ -174,6 +193,7 @@ function makeFractionQuestion(level) {
   const n2 = rand(1, d2 - 1);
   const op = choose(['＋', '−', '×']);
   let n, d;
+
   if (op === '＋') {
     n = n1 * d2 + n2 * d1;
     d = d1 * d2;
@@ -187,12 +207,15 @@ function makeFractionQuestion(level) {
     n = n1 * n2;
     d = d1 * d2;
   }
+
   const f = normalizeFraction(n, d);
   return {
     type: '分数',
     text: `${n1}/${d1} ${op} ${n2}/${d2}`,
+    displayHtml: fractionExpressionHtml(n1, d1, op, n2, d2),
     answerValue: f.n / f.d,
     answerText: fractionText(f.n, f.d),
+    answerHtml: fractionHtml(f.n, f.d),
     hint: '約分した分数（例 3/4）で答えてください'
   };
 }
@@ -207,8 +230,8 @@ function makeExponentQuestion(level) {
   const answer = op === '＋' ? power + b : power - b;
   return {
     type: '指数',
-    text: `${a}<sup>${exponent}</sup> ${op} ${b}`,
-    html: true,
+    text: `${a}^${exponent} ${op} ${b}`,
+    displayHtml: `<span class="math-expression"><span>${a}<sup>${exponent}</sup></span><span class="math-operator">${op}</span><span>${b}</span></span>`,
     answerValue: answer,
     answerText: String(answer),
     hint: '整数で答えてください'
@@ -301,8 +324,11 @@ function nextQuestion() {
 
   els.questionNumber.textContent = `第${state.questionCount}問`;
   els.questionType.textContent = state.question.type;
-  if (state.question.html) els.problem.innerHTML = state.question.text;
-  else els.problem.textContent = state.question.text;
+  if (state.question.displayHtml) {
+    els.problem.innerHTML = state.question.displayHtml;
+  } else {
+    els.problem.textContent = state.question.text;
+  }
   els.answerHint.textContent = state.question.hint;
   els.answerDisplay.textContent = '?';
   els.feedback.textContent = '答えを入力して Enter';
@@ -364,9 +390,12 @@ function submitAnswer(timedOut = false) {
       given: timedOut ? null : state.input,
       timedOut
     });
-    els.feedback.textContent = timedOut
-      ? `時間切れ！ 正解は ${state.question.answerText}`
-      : `おしい！ 正解は ${state.question.answerText}`;
+    const prefix = timedOut ? '時間切れ！ 正解は ' : 'おしい！ 正解は ';
+    if (state.question.answerHtml) {
+      els.feedback.innerHTML = `${prefix}<span class="feedback-answer">${state.question.answerHtml}</span>`;
+    } else {
+      els.feedback.textContent = `${prefix}${state.question.answerText}`;
+    }
     els.feedback.className = 'feedback wrong';
   }
 
@@ -429,9 +458,10 @@ function renderReview() {
   state.mistakes.slice(0, 10).forEach((item) => {
     const row = document.createElement('div');
     row.className = 'review-item';
-    const yourAnswer = item.timedOut ? '時間切れ' : item.given;
-    const problem = item.html ? item.text : item.text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    row.innerHTML = `<strong>${problem} = ${item.answerText}</strong><span>あなた: ${yourAnswer}</span>`;
+    const yourAnswer = item.timedOut ? '時間切れ' : escapeHtml(item.given);
+    const problemHtml = item.displayHtml || escapeHtml(item.text);
+    const answerHtml = item.answerHtml || escapeHtml(item.answerText);
+    row.innerHTML = `<strong class="review-problem"><span class="review-expression">${problemHtml}</span><span class="review-equals">＝</span><span class="review-answer">${answerHtml}</span></strong><span>あなた: ${yourAnswer}</span>`;
     els.reviewList.appendChild(row);
   });
 }
